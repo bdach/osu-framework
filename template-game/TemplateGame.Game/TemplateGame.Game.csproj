@@ -9,7 +9,6 @@
     <Company>ppy Pty Ltd</Company>
     <Description>Template to use when creating a game powered by osu!framework.</Description>
     <PackageId>ppy.osu.Framework.Templates</PackageId>
-    <PackageType>Template</PackageType>
     <PackageReleaseNotes>Automated release.</PackageReleaseNotes>
     <PackageTags>osu game template framework</PackageTags>
     <Copyright>Copyright (c) 2019 ppy Pty Ltd</Copyright>
