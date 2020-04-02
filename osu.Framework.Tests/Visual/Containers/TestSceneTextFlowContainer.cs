@@ -15,6 +15,7 @@ namespace osu.Framework.Tests.Visual.Containers
     public class TestSceneTextFlowContainer : FrameworkTestScene
     {
         private const string multi_paragraph_text = "Default text\n\nnewline";
+        private const string single_paragraph_text = "This text is very long and won't fit into a single line in the flow, but takes only one paragraph.";
 
         private TextFlowContainer textContainer;
 
@@ -42,6 +43,19 @@ namespace osu.Framework.Tests.Visual.Containers
                 }
             };
         });
+
+        [TestCase(Anchor.TopLeft)]
+        [TestCase(Anchor.TopCentre)]
+        [TestCase(Anchor.TopRight)]
+        [TestCase(Anchor.BottomLeft)]
+        [TestCase(Anchor.BottomCentre)]
+        [TestCase(Anchor.BottomRight)]
+        public void TestSingleParagraphTextFlowing(Anchor anchor)
+        {
+            AddStep("set single-paragraph text", () => textContainer.Text = single_paragraph_text);
+
+            checkCorrectPositioning(anchor, single_paragraph_text);
+        }
 
         [TestCase(Anchor.TopLeft)]
         [TestCase(Anchor.TopCentre)]
