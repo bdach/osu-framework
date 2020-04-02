@@ -14,7 +14,7 @@ namespace osu.Framework.Tests.Visual.Containers
 {
     public class TestSceneTextFlowContainer : FrameworkTestScene
     {
-        private const string default_text = "Default text\n\nnewline";
+        private const string multi_paragraph_text = "Default text\n\nnewline";
 
         private TextFlowContainer textContainer;
 
@@ -38,7 +38,6 @@ namespace osu.Framework.Tests.Visual.Containers
                     {
                         RelativeSizeAxes = Axes.X,
                         AutoSizeAxes = Axes.Y,
-                        Text = default_text
                     }
                 }
             };
@@ -50,7 +49,14 @@ namespace osu.Framework.Tests.Visual.Containers
         [TestCase(Anchor.BottomLeft)]
         [TestCase(Anchor.BottomCentre)]
         [TestCase(Anchor.BottomRight)]
-        public void TestChangeTextAnchor(Anchor anchor)
+        public void TestMultiParagraphTextFlowing(Anchor anchor)
+        {
+            AddStep("set multi-paragraph text", () => textContainer.Text = multi_paragraph_text);
+
+            checkCorrectPositioning(anchor, multi_paragraph_text);
+        }
+
+        private void checkCorrectPositioning(Anchor anchor, string expectedText)
         {
             AddStep("change text anchor", () => textContainer.TextAnchor = anchor);
             AddAssert("children have correct anchors", () => textContainer.Children.All(c => c.Anchor == anchor && c.Origin == anchor));
@@ -60,7 +66,7 @@ namespace osu.Framework.Tests.Visual.Containers
                                                         .OrderBy(c => c.ScreenSpaceDrawQuad.TopLeft.Y)
                                                         .ThenBy(c => c is TextFlowContainer.NewLineContainer ? 0 : c.ScreenSpaceDrawQuad.TopLeft.X)
                                                         .Select(c => (c as SpriteText)?.Text.ToString() ?? "\n"));
-                return result == default_text;
+                return result == expectedText;
             });
         }
 
