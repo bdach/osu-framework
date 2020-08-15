@@ -282,7 +282,10 @@ namespace osu.Framework.Graphics.Transforms
                 return;
             }
 
-            getTrackerFor(transform.TargetMember, true).AddTransform(transform, customTransformID);
+            var tracker = getTrackerFor(transform.TargetMember, true);
+            var transformAppliedImmediately = tracker.AddTransform(transform, customTransformID);
+            if (transformAppliedImmediately)
+                lastUpdateTransformsTime = Time.Current;
         }
     }
 }

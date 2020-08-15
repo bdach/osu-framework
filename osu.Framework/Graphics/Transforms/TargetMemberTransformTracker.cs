@@ -204,7 +204,8 @@ namespace osu.Framework.Graphics.Transforms
         /// </summary>
         /// <param name="transform">The <see cref="Transform"/> to be added.</param>
         /// <param name="customTransformID">When not null, the <see cref="Transform.TransformID"/> to assign for ordering.</param>
-        public void AddTransform(Transform transform, ulong? customTransformID = null)
+        /// <returns>Whether the newly-added transform was applied immediately.</returns>
+        public bool AddTransform(Transform transform, ulong? customTransformID = null)
         {
             Debug.Assert(!(transform.TransformID == 0 && transforms.Contains(transform)), $"Zero-id {nameof(Transform)}s should never be contained already.");
 
@@ -231,8 +232,12 @@ namespace osu.Framework.Graphics.Transforms
 
             // If our newly added transform could have an immediate effect, then let's
             // make this effect happen immediately.
-            if (transform.StartTime < time || transform.EndTime <= time)
+            var applyImmediately = transform.StartTime < time || transform.EndTime <= time;
+
+            if (applyImmediately)
                 UpdateTransforms(time, !transformable.RemoveCompletedTransforms && transform.StartTime <= time);
+
+            return applyImmediately;
         }
 
         /// <summary>
