@@ -77,8 +77,6 @@ namespace osu.Framework.Graphics.Transforms
             updateTransforms(Time.Current);
         }
 
-        private double lastUpdateTransformsTime;
-
         private readonly List<TargetGroupingTransformTracker> targetGroupingTrackers = new List<TargetGroupingTransformTracker>();
 
         private TargetGroupingTransformTracker getTrackerFor(string targetMember)
@@ -113,15 +111,11 @@ namespace osu.Framework.Graphics.Transforms
         /// This is used for performing extra updates on <see cref="Transform"/>s when new <see cref="Transform"/>s are added.
         /// </summary>
         /// <param name="time">The point in time to update transforms to.</param>
-        /// <param name="forceRewindReprocess">Whether prior transforms should be reprocessed even if a rewind was not detected.</param>
-        private void updateTransforms(double time, bool forceRewindReprocess = false)
+        private void updateTransforms(double time)
         {
-            bool rewinding = lastUpdateTransformsTime > time || forceRewindReprocess;
-            lastUpdateTransformsTime = time;
-
             // collection may grow due to abort / completion events.
             for (var i = 0; i < targetGroupingTrackers.Count; i++)
-                targetGroupingTrackers[i].UpdateTransforms(time, rewinding);
+                targetGroupingTrackers[i].UpdateTransforms(time);
         }
 
         /// <summary>

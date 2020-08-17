@@ -42,6 +42,11 @@ namespace osu.Framework.Graphics.Transforms
         private int? lastAppliedIndex;
 
         /// <summary>
+        /// The last time instant for which this tracker's transform updates were ran.
+        /// </summary>
+        private double lastUpdateTransformsTime;
+
+        /// <summary>
         /// All <see cref="Transform.TargetMember"/>s which are handled by this tracker.
         /// </summary>
         public IEnumerable<string> TargetMembers => targetMembers;
@@ -54,8 +59,11 @@ namespace osu.Framework.Graphics.Transforms
             this.transformable = transformable;
         }
 
-        public void UpdateTransforms(in double time, bool rewinding)
+        public void UpdateTransforms(in double time, bool forceRewindReprocess = false)
         {
+            bool rewinding = lastUpdateTransformsTime > time || forceRewindReprocess;
+            lastUpdateTransformsTime = time;
+
             if (rewinding && !transformable.RemoveCompletedTransforms)
             {
                 resetLastAppliedIndex();
