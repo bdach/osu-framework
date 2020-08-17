@@ -24,7 +24,7 @@ namespace osu.Framework.Graphics.Transforms
         /// </summary>
         public readonly string TargetGrouping;
 
-        private readonly SortedList<Transform> transforms = new SortedList<Transform>(Transform.COMPARER);
+        private readonly SparseSortedList<Transform> transforms = new SparseSortedList<Transform>(Transform.COMPARER);
 
         private readonly Transformable transformable;
 
@@ -35,11 +35,6 @@ namespace osu.Framework.Graphics.Transforms
         /// incremented whenever a <see cref="Transform"/> is added.
         /// </summary>
         private ulong currentTransformID;
-
-        /// <summary>
-        /// The index of the last transform in <see cref="transforms"/> to be applied to completion.
-        /// </summary>
-        private int? lastAppliedIndex;
 
         /// <summary>
         /// All <see cref="Transform.TargetMember"/>s which are handled by this tracker.
@@ -58,7 +53,7 @@ namespace osu.Framework.Graphics.Transforms
         {
             if (rewinding && !transformable.RemoveCompletedTransforms)
             {
-                resetLastAppliedIndex();
+                transforms.MarkAllAlive();
 
                 bool appliedToEndRevert = false;
 
@@ -103,8 +98,11 @@ namespace osu.Framework.Graphics.Transforms
                 }
             }
 
-            for (int i = lastAppliedIndex ?? 0; i < transforms.Count; ++i)
+            for (int i = transforms.FirstAlive; i < transforms.Count; ++i)
             {
+                if (!transforms.IsAlive(i))
+                    continue;
+
                 var t = transforms[i];
 
                 var tCanRewind = !transformable.RemoveCompletedTransforms && t.Rewindable;
@@ -121,8 +119,11 @@ namespace osu.Framework.Graphics.Transforms
                     // Since following transforms acting on the same target member are immediately removed when a
                     // new one is added, we can be sure that previous transforms were added before this one and can
                     // be safely removed.
-                    for (int j = lastAppliedIndex ?? 0; j < i; ++j)
+                    for (int j = transforms.FirstAlive; j < i; ++j)
                     {
+                        if (!transforms.IsAlive(j))
+                            continue;
+
                         var u = transforms[j];
                         if (u.TargetMember != t.TargetMember) continue;
 
@@ -194,10 +195,10 @@ namespace osu.Framework.Graphics.Transforms
                 }
 
                 if (flushAppliedCache)
-                    resetLastAppliedIndex();
+                    transforms.MarkAllAlive();
                 // if this transform is applied to end, we can be sure that all previous transforms have been completed.
                 else if (t.AppliedToEnd)
-                    lastAppliedIndex = i + 1;
+                    transforms.MarkDead(i);
             }
 
             invokePendingRemovalActions();
@@ -227,7 +228,7 @@ namespace osu.Framework.Graphics.Transforms
 
             transform.TransformID = customTransformID ?? ++currentTransformID;
             int insertionIndex = transforms.Add(transform);
-            resetLastAppliedIndex();
+            transforms.MarkAllAlive();
 
             // Remove all existing following transforms touching the same property as this one.
             for (int i = insertionIndex + 1; i < transforms.Count; ++i)
@@ -271,7 +272,7 @@ namespace osu.Framework.Graphics.Transforms
         /// </param>
         public virtual void ClearTransformsAfter(double time, string targetMember = null)
         {
-            resetLastAppliedIndex();
+            transforms.MarkAllAlive();
 
             Transform[] toAbort;
 
@@ -309,7 +310,7 @@ namespace osu.Framework.Graphics.Transforms
             var toFlush = transforms.Where(toFlushPredicate).ToArray();
 
             transforms.RemoveAll(t => toFlushPredicate(t));
-            resetLastAppliedIndex();
+            transforms.MarkAllAlive();
 
             foreach (Transform t in toFlush)
             {
@@ -329,10 +330,5 @@ namespace osu.Framework.Graphics.Transforms
                     action();
             }
         }
-
-        /// <summary>
-        /// Reset the last applied index cache completely.
-        /// </summary>
-        private void resetLastAppliedIndex() => lastAppliedIndex = null;
     }
 }
