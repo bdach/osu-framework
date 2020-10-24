@@ -413,6 +413,35 @@ namespace osu.Framework.Tests.Visual.UserInterface
             AddAssert("text replaced", () => textBox.FlowingText == "another" && textBox.FlowingText == textBox.Text);
         }
 
+        [Test]
+        public void TestDisableAndSetText()
+        {
+            InsertableTextBox textBox = null;
+
+            AddStep("add text box", () =>
+            {
+                textBoxes.Add(textBox = new InsertableTextBox
+                {
+                    Size = new Vector2(200, 40),
+                    Text = "hello"
+                });
+            });
+            AddAssert("text is hello", () => textBox.Text == "hello");
+
+            AddStep("set new text and disable", () =>
+            {
+                textBox.Text = "goodbye";
+                textBox.Current.Disabled = true;
+            });
+            AddAssert("text is goodbye", () => textBox.Text == "goodbye");
+
+            AddStep("attempt to set text", () => textBox.Text = "change!");
+            AddAssert("text is unchanged", () => textBox.ReadOnly && textBox.Text == "goodbye");
+
+            AddStep("attempt to insert text", () => textBox.InsertString("maybe this way?"));
+            AddAssert("text is unchanged", () => textBox.ReadOnly && textBox.Text == "goodbye");
+        }
+
         public class InsertableTextBox : BasicTextBox
         {
             /// <summary>
