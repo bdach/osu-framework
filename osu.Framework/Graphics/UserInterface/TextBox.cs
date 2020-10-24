@@ -62,7 +62,11 @@ namespace osu.Framework.Graphics.UserInterface
         /// <returns>Whether the character is allowed to be added.</returns>
         protected virtual bool CanAddCharacter(char character) => true;
 
-        public bool ReadOnly;
+        public bool ReadOnly
+        {
+            get => Current.Disabled;
+            set => Current.Disabled = value;
+        }
 
         /// <summary>
         /// Whether the textbox should rescind focus on commit.
@@ -329,7 +333,7 @@ namespace osu.Framework.Graphics.UserInterface
             if (HasFocus)
                 caret.DisplayAt(new Vector2(cursorPos, 0), selectionWidth);
 
-            if (textAtLastLayout != text)
+            if (Current.Value != text)
                 Current.Value = text;
 
             if (textAtLastLayout.Length == 0 || text.Length == 0)
@@ -517,11 +521,11 @@ namespace osu.Framework.Graphics.UserInterface
 
         protected void InsertString(string value) => insertString(value);
 
-        private void insertString(string value, Action<Drawable> drawableCreationParameters = null)
+        private void insertString(string value, Action<Drawable> drawableCreationParameters = null, bool bypassDisable = false)
         {
             if (string.IsNullOrEmpty(value)) return;
 
-            if (Current.Disabled)
+            if (Current.Disabled && !bypassDisable)
             {
                 NotifyInputError();
                 return;
@@ -638,8 +642,7 @@ namespace osu.Framework.Graphics.UserInterface
                 else
                     Placeholder.Hide();
 
-                if (!IsLoaded)
-                    Current.Value = text = value;
+                Current.Value = text = value;
 
                 textUpdateScheduler.Add(delegate
                 {
@@ -648,7 +651,10 @@ namespace osu.Framework.Graphics.UserInterface
                     TextFlow?.Clear();
 
                     text = string.Empty;
-                    InsertString(value);
+                    // bypassing the disable is allowed here, to prevent changes to Current.Disabled
+                    // between the Text set and this schedule resulting in exceptions when this runs.
+                    // we've set the value of Current already, and ensured this can't run if Current is disabled anyway.
+                    insertString(value, bypassDisable: true);
 
                     selectionStart = Math.Clamp(startBefore, 0, text.Length);
                 });
