@@ -110,9 +110,9 @@ namespace osu.Framework.Audio
 
                 if (Looping && HasCompleted)
                     OnLooping();
-            }
 
-            UpdateChildren();
+                UpdateChildren();
+            }
         }
 
         /// <summary>
