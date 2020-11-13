@@ -18,6 +18,7 @@ namespace osu.Framework.Audio
         {
             EnqueueAction(delegate
             {
+                if (IsDisposed) return;
                 if (Items.Contains(item)) return;
 
                 item.BindAdjustments(this);
@@ -51,6 +52,9 @@ namespace osu.Framework.Audio
 
         public override void Dispose()
         {
+            // set disposal flag early (before base call does) to avoid new items getting added/removed while we're cleaning up Items.
+            IsDisposed = true;
+
             // we need to queue disposal of our Items before enqueueing the main dispose.
             foreach (var i in Items)
                 i.Dispose();
