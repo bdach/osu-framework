@@ -28,7 +28,7 @@ namespace osu.Framework.Audio.Sample
             (store as ResourceStore<byte[]>)?.AddExtension(@"mp3");
         }
 
-        public SampleChannel Get(string name)
+        private SampleChannel get(string name, bool allowConcurrentPlayback)
         {
             if (IsDisposed) throw new ObjectDisposedException($"Cannot retrieve items for an already disposed {nameof(SampleStore)}");
 
@@ -36,7 +36,7 @@ namespace osu.Framework.Audio.Sample
 
             lock (sampleCache)
             {
-                SampleChannel channel = null;
+                SampleChannelBass channel = null;
 
                 if (!sampleCache.TryGetValue(name, out Sample sample))
                 {
@@ -48,21 +48,18 @@ namespace osu.Framework.Audio.Sample
 
                 if (sample != null)
                 {
-                    channel = new SampleChannelBass(sample, AddItem);
+                    channel = new SampleChannelBass(sample, AddItem)
+                    {
+                        ConcurrentPlayback = allowConcurrentPlayback
+                    };
                 }
 
                 return channel;
             }
         }
 
-        public SampleChannel GetLayerable(string sampleName)
-        {
-            var channel = Get(sampleName);
-
-            channel.ConcurrentPlayback = true;
-
-            return channel;
-        }
+        public SampleChannel Get(string sampleName) => get(sampleName, false);
+        public IPlayOnlySampleChannel GetLayerable(string sampleName) => get(sampleName, true);
 
         public Task<SampleChannel> GetAsync(string name) => Task.Run(() => Get(name));
 

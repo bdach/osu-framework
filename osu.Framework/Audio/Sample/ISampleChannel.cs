@@ -6,7 +6,7 @@ namespace osu.Framework.Audio.Sample
     /// <summary>
     /// A channel playing back an audio sample.
     /// </summary>
-    public interface ISampleChannel : IHasAmplitudes
+    public interface ISampleChannel : IPlayOnlySampleChannel
     {
         /// <summary>
         /// Start a playback of this sample.
@@ -14,29 +14,16 @@ namespace osu.Framework.Audio.Sample
         /// <param name="restart">Whether to restart the sample from the beginning. If true, any existing playback of the channel will be stopped.</param>
         void Play(bool restart = true);
 
+        void IPlayOnlySampleChannel.Play() => Play();
+
         /// <summary>
         /// Stop playback and reset position to beginning of sample.
         /// </summary>
         void Stop();
 
         /// <summary>
-        /// Whether the sample is playing.
-        /// </summary>
-        bool Playing { get; }
-
-        /// <summary>
-        /// Whether the sample has finished playback.
-        /// </summary>
-        bool Played { get; }
-
-        /// <summary>
         /// States if this sample should repeat.
         /// </summary>
         bool Looping { get; set; }
-
-        /// <summary>
-        /// The length of the underlying sample, in milliseconds.
-        /// </summary>
-        double Length { get; }
     }
 }

@@ -14,6 +14,11 @@ namespace osu.Framework.Audio.Sample
 
         public override bool IsLoaded => Sample.IsLoaded;
 
+        /// <summary>
+        /// Whether each invocation of <see cref="Play"/> results in a new (potentially concurrent) playback.
+        /// </summary>
+        internal bool ConcurrentPlayback { get; set; }
+
         private readonly BassRelativeFrequencyHandler relativeFrequencyHandler;
         private BassAmplitudeProcessor bassAmplitudeProcessor;
 
@@ -63,6 +68,9 @@ namespace osu.Framework.Audio.Sample
 
         public override void Play(bool restart = true)
         {
+            if (!restart && ConcurrentPlayback)
+                throw new ArgumentException("Cannot resume playback of a layered sample playback.");
+
             base.Play(restart);
 
             EnqueueAction(() =>
@@ -115,6 +123,9 @@ namespace osu.Framework.Audio.Sample
 
         public override void Stop()
         {
+            if (ConcurrentPlayback)
+                throw new InvalidOperationException($"Cannot call {nameof(Stop)} on a layered sample playback.");
+
             base.Stop();
 
             EnqueueAction(() =>

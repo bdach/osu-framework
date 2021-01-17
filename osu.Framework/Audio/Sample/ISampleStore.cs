@@ -22,6 +22,6 @@ namespace osu.Framework.Audio.Sample
         /// </summary>
         /// <param name="sampleName">The name of the sample.</param>
         /// <returns>A new channel for the specified sample.</returns>
-        SampleChannel GetLayerable(string sampleName);
+        IPlayOnlySampleChannel GetLayerable(string sampleName);
     }
 }
