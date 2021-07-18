@@ -6,7 +6,9 @@ using osu.Framework.Graphics.Sprites;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using osu.Framework.Allocation;
 using osu.Framework.Extensions.EnumExtensions;
+using osu.Framework.Localisation;
 
 namespace osu.Framework.Graphics.Containers
 {
@@ -15,6 +17,9 @@ namespace osu.Framework.Graphics.Containers
     /// </summary>
     public class TextFlowContainer : FillFlowContainer
     {
+        [Resolved]
+        internal LocalisationManager Localisation { get; private set; }
+
         private float firstLineIndent;
         private readonly Action<SpriteText> defaultCreationParameters;
 
@@ -118,9 +123,9 @@ namespace osu.Framework.Graphics.Containers
 
         /// <summary>
         /// An easy way to set the full text of a text flow in one go.
-        /// This will overwrite any existing text added using this method of <see cref="AddText(string, Action{SpriteText})"/>
+        /// This will overwrite any existing text added using this method of <see cref="AddText(LocalisableString, Action{SpriteText})"/>
         /// </summary>
-        public string Text
+        public LocalisableString Text
         {
             set
             {
@@ -201,12 +206,12 @@ namespace osu.Framework.Graphics.Containers
         }
 
         /// <summary>
-        /// Add new text to this text flow. The \n character will create a new paragraph, not just a line break. If you need \n to be a line break, use <see cref="AddParagraph(string, Action{SpriteText})"/> instead.
+        /// Add new text to this text flow. The \n character will create a new paragraph, not just a line break. If you need \n to be a line break, use <see cref="AddParagraph(LocalisableString, Action{SpriteText})"/> instead.
         /// </summary>
         /// <returns>A collection of <see cref="Drawable" /> objects for each <see cref="SpriteText"/> word and <see cref="NewLineContainer"/> created from the given text.</returns>
         /// <param name="text">The text to add.</param>
         /// <param name="creationParameters">A callback providing any <see cref="SpriteText" /> instances created for this new text.</param>
-        public ITextPart AddText(string text, Action<SpriteText> creationParameters = null) => AddPart(CreateChunkFor(text, true, creationParameters));
+        public ITextPart AddText(LocalisableString text, Action<SpriteText> creationParameters = null) => AddPart(CreateChunkFor(text, true, creationParameters));
 
         /// <summary>
         /// Add an arbitrary <see cref="SpriteText"/> to this <see cref="TextFlowContainer"/>.
@@ -223,14 +228,14 @@ namespace osu.Framework.Graphics.Containers
         }
 
         /// <summary>
-        /// Add a new paragraph to this text flow. The \n character will create a line break. If you need \n to be a new paragraph, not just a line break, use <see cref="AddText(string, Action{SpriteText})"/> instead.
+        /// Add a new paragraph to this text flow. The \n character will create a line break. If you need \n to be a new paragraph, not just a line break, use <see cref="AddText(LocalisableString, Action{SpriteText})"/> instead.
         /// </summary>
         /// <returns>A collection of <see cref="Drawable" /> objects for each <see cref="SpriteText"/> word and <see cref="NewLineContainer"/> created from the given text.</returns>
         /// <param name="paragraph">The paragraph to add.</param>
         /// <param name="creationParameters">A callback providing any <see cref="SpriteText" /> instances created for this new paragraph.</param>
-        public ITextPart AddParagraph(string paragraph, Action<SpriteText> creationParameters = null) => AddPart(CreateChunkFor(paragraph, false, creationParameters));
+        public ITextPart AddParagraph(LocalisableString paragraph, Action<SpriteText> creationParameters = null) => AddPart(CreateChunkFor(paragraph, false, creationParameters));
 
-        internal virtual TextChunk CreateChunkFor(string text, bool newLineIsParagraph, Action<SpriteText> creationParameters = null)
+        internal virtual TextChunk CreateChunkFor(LocalisableString text, bool newLineIsParagraph, Action<SpriteText> creationParameters = null)
             => new TextChunk(text, newLineIsParagraph, creationParameters);
 
         /// <summary>

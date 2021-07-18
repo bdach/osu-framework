@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using osu.Framework.Graphics.Sprites;
+using osu.Framework.Localisation;
 
 namespace osu.Framework.Graphics.Containers
 {
@@ -83,7 +84,7 @@ namespace osu.Framework.Graphics.Containers
 
         internal bool TryGetIconFactory(string name, out Delegate iconFactory) => iconFactories.TryGetValue(name, out iconFactory);
 
-        internal override TextChunk CreateChunkFor(string text, bool newLineIsParagraph, Action<SpriteText> creationParameters = null) =>
+        internal override TextChunk CreateChunkFor(LocalisableString text, bool newLineIsParagraph, Action<SpriteText> creationParameters = null) =>
             new CustomizableTextChunk(text, newLineIsParagraph, creationParameters);
     }
 }

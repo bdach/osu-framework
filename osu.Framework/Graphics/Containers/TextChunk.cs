@@ -5,7 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using JetBrains.Annotations;
 using osu.Framework.Graphics.Sprites;
+using osu.Framework.Localisation;
 
 namespace osu.Framework.Graphics.Containers
 {
@@ -13,11 +15,14 @@ namespace osu.Framework.Graphics.Containers
     {
         public event Action<IEnumerable<Drawable>> DrawablePartsRecreated;
 
-        private readonly string text;
+        private readonly LocalisableString text;
         private readonly bool newLineIsParagraph;
         private readonly Action<SpriteText> creationParameters;
 
-        public TextChunk(string text, bool newLineIsParagraph, Action<SpriteText> creationParameters = null)
+        [CanBeNull]
+        private ILocalisedBindableString localisedText;
+
+        public TextChunk(LocalisableString text, bool newLineIsParagraph, Action<SpriteText> creationParameters = null)
         {
             this.text = text;
             this.newLineIsParagraph = newLineIsParagraph;
@@ -39,7 +44,11 @@ namespace osu.Framework.Graphics.Containers
                 textFlowContainer.AddPart(newLine);
             }
 
-            var parts = CreateSprites(text, textFlowContainer);
+            // the localisation manager may not be available yet, if this is called before its BDL.
+            localisedText ??= textFlowContainer.Localisation?.GetLocalisedString(text);
+            string currentText = localisedText?.Value ?? text.ToString();
+
+            var parts = CreateSprites(currentText, textFlowContainer);
             DrawablePartsRecreated?.Invoke(parts);
             return parts;
         }

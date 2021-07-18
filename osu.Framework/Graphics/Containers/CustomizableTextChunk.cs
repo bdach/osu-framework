@@ -5,12 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using osu.Framework.Graphics.Sprites;
+using osu.Framework.Localisation;
 
 namespace osu.Framework.Graphics.Containers
 {
     internal class CustomizableTextChunk : TextChunk
     {
-        public CustomizableTextChunk(string text, bool newLineIsParagraph, Action<SpriteText> creationParameters = null)
+        public CustomizableTextChunk(LocalisableString text, bool newLineIsParagraph, Action<SpriteText> creationParameters = null)
             : base(text, newLineIsParagraph, creationParameters)
         {
         }
