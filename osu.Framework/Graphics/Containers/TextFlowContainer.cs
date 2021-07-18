@@ -18,7 +18,7 @@ namespace osu.Framework.Graphics.Containers
         private float firstLineIndent;
         private readonly Action<SpriteText> defaultCreationParameters;
 
-        private readonly List<(ITextPart, Drawable)> parts = new List<(ITextPart, Drawable)>();
+        private readonly List<ITextPart> parts = new List<ITextPart>();
 
         public TextFlowContainer(Action<SpriteText> defaultCreationParameters = null)
         {
@@ -258,15 +258,15 @@ namespace osu.Framework.Graphics.Containers
             throw new InvalidOperationException($"Use {nameof(AddText)} to add text to a {nameof(TextFlowContainer)}.");
         }
 
-        internal void Add(Drawable drawable, ITextPart source)
-        {
-            base.Add(drawable);
-            parts.Add((source, drawable));
-        }
-
         internal ITextPart AddPart(ITextPart part)
         {
-            part.AppendTo(this);
+            var drawables = part.CreateDrawablesFor(this);
+
+            foreach (var d in drawables)
+                base.Add(d);
+
+            parts.Add(part);
+
             return part;
         }
 

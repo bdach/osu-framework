@@ -10,6 +10,6 @@ namespace osu.Framework.Graphics.Containers
     {
         event Action<IEnumerable<Drawable>> DrawablePartsRecreated;
 
-        void AppendTo(TextFlowContainer textFlowContainer);
+        IEnumerable<Drawable> CreateDrawablesFor(TextFlowContainer textFlowContainer);
     }
 }

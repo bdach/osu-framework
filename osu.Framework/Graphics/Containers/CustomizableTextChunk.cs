@@ -114,7 +114,6 @@ namespace osu.Framework.Graphics.Containers
                     if (placeholderDrawable.Parent != null)
                         throw new ArgumentException("All icons used by a customizable text container must not have a parent. If you get this error message it means one of your icon factories created a drawable that was already added to another parent, or you used a drawable as a placeholder that already has another parent or you used an index-based placeholder (like [2]) more than once.");
 
-                    textFlowContainer.Add(placeholderDrawable, this);
                     sprites.Add(placeholderDrawable);
                 }
             }

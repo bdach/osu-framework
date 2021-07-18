@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using osu.Framework.Extensions.IEnumerableExtensions;
 using osu.Framework.Graphics.Sprites;
 
 namespace osu.Framework.Graphics.Containers
@@ -22,9 +23,6 @@ namespace osu.Framework.Graphics.Containers
             this.spriteText = spriteText;
         }
 
-        public void AppendTo(TextFlowContainer textFlowContainer)
-        {
-            textFlowContainer.Add(spriteText, this);
-        }
+        public IEnumerable<Drawable> CreateDrawablesFor(TextFlowContainer textFlowContainer) => spriteText.Yield();
     }
 }

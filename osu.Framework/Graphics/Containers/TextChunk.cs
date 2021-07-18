@@ -29,7 +29,7 @@ namespace osu.Framework.Graphics.Containers
             creationParameters?.Invoke(spriteText);
         }
 
-        public void AppendTo(TextFlowContainer textFlowContainer)
+        public IEnumerable<Drawable> CreateDrawablesFor(TextFlowContainer textFlowContainer)
         {
             // !newLineIsParagraph effectively means that we want to add just *one* paragraph, which means we need to make sure that any previous paragraphs
             // are terminated. Thus, we add a NewLineContainer that indicates the end of the paragraph before adding our current paragraph.
@@ -41,6 +41,7 @@ namespace osu.Framework.Graphics.Containers
 
             var parts = CreateSprites(text, textFlowContainer);
             DrawablePartsRecreated?.Invoke(parts);
+            return parts;
         }
 
         protected virtual IEnumerable<Drawable> CreateSprites(string text, TextFlowContainer textFlowContainer)
@@ -52,13 +53,12 @@ namespace osu.Framework.Graphics.Containers
             {
                 if (!first)
                 {
-                    Drawable lastChild = textFlowContainer.Children.LastOrDefault();
+                    Drawable lastChild = sprites.LastOrDefault() ?? textFlowContainer.Children.LastOrDefault();
 
                     if (lastChild != null)
                     {
                         var newLine = new TextFlowContainer.NewLineContainer(newLineIsParagraph);
                         sprites.Add(newLine);
-                        textFlowContainer.Add(newLine, this);
                     }
                 }
 
@@ -69,7 +69,6 @@ namespace osu.Framework.Graphics.Containers
                     var textSprite = textFlowContainer.CreateSpriteTextWithChunk(this);
                     textSprite.Text = word;
                     sprites.Add(textSprite);
-                    textFlowContainer.Add(textSprite, this);
                 }
 
                 first = false;

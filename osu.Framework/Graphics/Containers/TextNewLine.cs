@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using osu.Framework.Extensions.IEnumerableExtensions;
 
 namespace osu.Framework.Graphics.Containers
 {
@@ -13,17 +12,16 @@ namespace osu.Framework.Graphics.Containers
 
         public readonly bool IndicatesNewParagraph;
 
-        private TextFlowContainer.NewLineContainer newLineContainer;
-
         public TextNewLine(bool indicatesNewParagraph)
         {
             IndicatesNewParagraph = indicatesNewParagraph;
         }
 
-        public void AppendTo(TextFlowContainer textFlowContainer)
+        public IEnumerable<Drawable> CreateDrawablesFor(TextFlowContainer textFlowContainer)
         {
-            textFlowContainer.Add(newLineContainer = new TextFlowContainer.NewLineContainer(IndicatesNewParagraph), this);
-            DrawablePartsRecreated?.Invoke(newLineContainer.Yield());
+            var drawables = new[] { new TextFlowContainer.NewLineContainer(IndicatesNewParagraph) };
+            DrawablePartsRecreated?.Invoke(drawables);
+            return drawables;
         }
     }
 }
