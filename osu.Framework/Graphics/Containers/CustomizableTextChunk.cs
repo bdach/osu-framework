@@ -15,19 +15,13 @@ namespace osu.Framework.Graphics.Containers
         {
         }
 
-        public override void AppendTo(TextFlowContainer textFlowContainer)
+        protected override IEnumerable<Drawable> CreateSprites(string text, TextFlowContainer textFlowContainer)
         {
             var customizableContainer = (CustomizableTextContainer)textFlowContainer;
 
-            if (!NewLineIsParagraph)
-            {
-                var newLine = new TextNewLine(true);
-                newLine.AppendTo(textFlowContainer);
-            }
-
             var sprites = new List<Drawable>();
             int index = 0;
-            string str = Text;
+            string str = text;
 
             while (index < str.Length)
             {
@@ -113,7 +107,7 @@ namespace osu.Framework.Graphics.Containers
 
                 // unescape stuff
                 strPiece = CustomizableTextContainer.Unescape(strPiece);
-                sprites.AddRange(CreateSprites(strPiece, textFlowContainer));
+                sprites.AddRange(base.CreateSprites(strPiece, textFlowContainer));
 
                 if (placeholderDrawable != null)
                 {
@@ -125,7 +119,7 @@ namespace osu.Framework.Graphics.Containers
                 }
             }
 
-            OnDrawablePartsRecreated(sprites);
+            return sprites;
         }
     }
 }
