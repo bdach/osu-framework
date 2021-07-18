@@ -31,6 +31,14 @@ namespace osu.Framework.Graphics.Containers
 
         public virtual void AppendTo(TextFlowContainer textFlowContainer)
         {
+            // !newLineIsParagraph effectively means that we want to add just *one* paragraph, which means we need to make sure that any previous paragraphs
+            // are terminated. Thus, we add a NewLineContainer that indicates the end of the paragraph before adding our current paragraph.
+            if (!NewLineIsParagraph)
+            {
+                var newLine = new TextNewLine(true);
+                textFlowContainer.AddPart(newLine);
+            }
+
             var parts = CreateSprites(Text, textFlowContainer);
             OnDrawablePartsRecreated(parts);
         }
