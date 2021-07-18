@@ -13,20 +13,22 @@ namespace osu.Framework.Graphics.Containers
     {
         public event Action<IEnumerable<Drawable>> DrawablePartsRecreated;
 
-        public readonly string Text;
-        public readonly bool NewLineIsParagraph;
-        internal readonly Action<SpriteText> CreationParameters;
+        protected readonly string Text;
+        protected readonly bool NewLineIsParagraph;
+
+        private readonly Action<SpriteText> creationParameters;
 
         public TextChunk(string text, bool newLineIsParagraph, Action<SpriteText> creationParameters = null)
         {
             Text = text;
             NewLineIsParagraph = newLineIsParagraph;
-            CreationParameters = creationParameters;
+
+            this.creationParameters = creationParameters;
         }
 
         public void ApplyParameters(SpriteText spriteText)
         {
-            CreationParameters?.Invoke(spriteText);
+            creationParameters?.Invoke(spriteText);
         }
 
         public virtual void AppendTo(TextFlowContainer textFlowContainer)
