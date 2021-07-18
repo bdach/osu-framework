@@ -130,8 +130,16 @@ namespace osu.Framework.Graphics.Containers
             set
             {
                 Clear();
+                clearParts();
+
                 AddText(value);
             }
+        }
+
+        [BackgroundDependencyLoader]
+        private void load()
+        {
+            recreateDrawables();
         }
 
         protected override void InvalidateLayout()
@@ -271,6 +279,7 @@ namespace osu.Framework.Graphics.Containers
                 base.Add(d);
 
             parts.Add(part);
+            part.ContentChanged += recreateDrawables;
 
             return part;
         }
@@ -351,6 +360,40 @@ namespace osu.Framework.Graphics.Containers
         }
 
         protected override bool ForceNewRow(Drawable child) => child is NewLineContainer;
+
+        private void recreateDrawables()
+        {
+            if (LoadState == LoadState.NotLoaded)
+                return;
+
+            // manual parts were given to this text flow container verbatim and cannot be recreated.
+            // remove them manually before clearing contents, to avoid disposing/losing them forever.
+            // they will be re-added via CreateDrawablesFor().
+            foreach (var manualPart in parts.OfType<TextPartManual>())
+                Remove(manualPart.SpriteText);
+
+            Clear();
+
+            foreach (var part in parts)
+            {
+                var drawables = part.CreateDrawablesFor(this);
+                foreach (var d in drawables)
+                    base.Add(d);
+            }
+        }
+
+        protected override void Dispose(bool isDisposing)
+        {
+            base.Dispose(isDisposing);
+            clearParts();
+        }
+
+        private void clearParts()
+        {
+            foreach (var part in parts)
+                part.ContentChanged -= recreateDrawables;
+            parts.Clear();
+        }
 
         public class NewLineContainer : Container
         {

@@ -3,46 +3,58 @@
 
 using System.Linq;
 using NUnit.Framework;
+using osu.Framework.Allocation;
+using osu.Framework.Configuration;
 using osu.Framework.Extensions.Color4Extensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.Sprites;
+using osu.Framework.Localisation;
+using osu.Framework.Testing;
 using osuTK.Graphics;
 
 namespace osu.Framework.Tests.Visual.Containers
 {
     public class TestSceneTextFlowContainer : FrameworkTestScene
     {
+        [Resolved]
+        private FrameworkConfigManager config { get; set; }
+
         private const string default_text = "Default text\n\nnewline";
 
         private TextFlowContainer textContainer;
 
-        [SetUp]
-        public void Setup() => Schedule(() =>
+        [SetUpSteps]
+        public void Setup()
         {
-            Child = new Container
+            AddStep("restore default romanisation settings", () => config.GetBindable<bool>(FrameworkSetting.ShowUnicode).SetDefault());
+
+            AddStep("create text flow", () =>
             {
-                Anchor = Anchor.Centre,
-                Origin = Anchor.Centre,
-                Width = 300,
-                AutoSizeAxes = Axes.Y,
-                Children = new Drawable[]
+                Child = new Container
                 {
-                    new Box
+                    Anchor = Anchor.Centre,
+                    Origin = Anchor.Centre,
+                    Width = 300,
+                    AutoSizeAxes = Axes.Y,
+                    Children = new Drawable[]
                     {
-                        RelativeSizeAxes = Axes.Both,
-                        Colour = Color4.White.Opacity(0.1f)
-                    },
-                    textContainer = new TextFlowContainer
-                    {
-                        RelativeSizeAxes = Axes.X,
-                        AutoSizeAxes = Axes.Y,
-                        Text = default_text
+                        new Box
+                        {
+                            RelativeSizeAxes = Axes.Both,
+                            Colour = Color4.White.Opacity(0.1f)
+                        },
+                        textContainer = new TextFlowContainer
+                        {
+                            RelativeSizeAxes = Axes.X,
+                            AutoSizeAxes = Axes.Y,
+                            Text = default_text
+                        }
                     }
-                }
-            };
-        });
+                };
+            });
+        }
 
         [TestCase(Anchor.TopLeft)]
         [TestCase(Anchor.TopCentre)]
@@ -70,6 +82,20 @@ namespace osu.Framework.Tests.Visual.Containers
             AddStep("change text anchor", () => textContainer.TextAnchor = Anchor.TopCentre);
             AddStep("add text", () => textContainer.AddText("added text"));
             AddAssert("children have correct anchors", () => textContainer.Children.All(c => c.Anchor == Anchor.TopCentre && c.Origin == Anchor.TopCentre));
+        }
+
+        [Test]
+        public void TestAddLocalisedText()
+        {
+            const string romanised = "world";
+            const string non_romanised = "世界";
+
+            AddStep("enable non-romanised display", () => config.SetValue(FrameworkSetting.ShowUnicode, true));
+
+            AddStep("add normal text", () => textContainer.AddText("hello "));
+            AddStep("add romanisable text", () => textContainer.AddText(new RomanisableString(non_romanised, romanised)));
+
+            AddStep("disable non-romanised display", () => config.SetValue(FrameworkSetting.ShowUnicode, false));
         }
     }
 }

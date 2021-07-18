@@ -16,13 +16,19 @@ namespace osu.Framework.Graphics.Containers
             remove { }
         }
 
-        private readonly SpriteText spriteText;
+        event Action ITextPart.ContentChanged
+        {
+            add { }
+            remove { }
+        }
+
+        public readonly SpriteText SpriteText;
 
         public TextPartManual(SpriteText spriteText)
         {
-            this.spriteText = spriteText;
+            SpriteText = spriteText;
         }
 
-        public IEnumerable<Drawable> CreateDrawablesFor(TextFlowContainer textFlowContainer) => spriteText.Yield();
+        public IEnumerable<Drawable> CreateDrawablesFor(TextFlowContainer textFlowContainer) => SpriteText.Yield();
     }
 }

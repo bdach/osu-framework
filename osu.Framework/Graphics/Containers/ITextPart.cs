@@ -8,6 +8,7 @@ namespace osu.Framework.Graphics.Containers
 {
     public interface ITextPart
     {
+        event Action ContentChanged;
         event Action<IEnumerable<Drawable>> DrawablePartsRecreated;
 
         IEnumerable<Drawable> CreateDrawablesFor(TextFlowContainer textFlowContainer);

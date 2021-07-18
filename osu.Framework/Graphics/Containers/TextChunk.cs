@@ -13,6 +13,7 @@ namespace osu.Framework.Graphics.Containers
 {
     internal class TextChunk : ITextPart
     {
+        public event Action ContentChanged;
         public event Action<IEnumerable<Drawable>> DrawablePartsRecreated;
 
         private readonly LocalisableString text;
@@ -20,7 +21,24 @@ namespace osu.Framework.Graphics.Containers
         private readonly Action<SpriteText> creationParameters;
 
         [CanBeNull]
-        private ILocalisedBindableString localisedText;
+        private ILocalisedBindableString localisedTextBacking;
+
+        [CanBeNull]
+        private ILocalisedBindableString localisedText
+        {
+            get => localisedTextBacking;
+            set
+            {
+                if (value == null)
+                    return;
+
+                if (localisedTextBacking != null)
+                    throw new InvalidOperationException("Cannot receive localised text more than once.");
+
+                localisedTextBacking = value;
+                localisedTextBacking.BindValueChanged(_ => ContentChanged?.Invoke());
+            }
+        }
 
         public TextChunk(LocalisableString text, bool newLineIsParagraph, Action<SpriteText> creationParameters = null)
         {

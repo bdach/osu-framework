@@ -8,6 +8,12 @@ namespace osu.Framework.Graphics.Containers
 {
     public class TextNewLine : ITextPart
     {
+        event Action ITextPart.ContentChanged
+        {
+            add { }
+            remove { }
+        }
+
         public event Action<IEnumerable<Drawable>> DrawablePartsRecreated;
 
         public readonly bool IndicatesNewParagraph;
