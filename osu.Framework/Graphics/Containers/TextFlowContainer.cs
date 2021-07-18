@@ -6,7 +6,6 @@ using osu.Framework.Graphics.Sprites;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using osu.Framework.Extensions.EnumExtensions;
 
 namespace osu.Framework.Graphics.Containers
@@ -18,6 +17,8 @@ namespace osu.Framework.Graphics.Containers
     {
         private float firstLineIndent;
         private readonly Action<SpriteText> defaultCreationParameters;
+
+        private readonly List<(ITextPart, Drawable)> parts = new List<(ITextPart, Drawable)>();
 
         public TextFlowContainer(Action<SpriteText> defaultCreationParameters = null)
         {
@@ -205,7 +206,7 @@ namespace osu.Framework.Graphics.Containers
         /// <returns>A collection of <see cref="Drawable" /> objects for each <see cref="SpriteText"/> word and <see cref="NewLineContainer"/> created from the given text.</returns>
         /// <param name="text">The text to add.</param>
         /// <param name="creationParameters">A callback providing any <see cref="SpriteText" /> instances created for this new text.</param>
-        public IEnumerable<Drawable> AddText(string text, Action<SpriteText> creationParameters = null) => AddLine(new TextChunk(text, true, creationParameters));
+        public ITextPart AddText(string text, Action<SpriteText> creationParameters = null) => AddLine(CreateChunkFor(text, true, creationParameters));
 
         /// <summary>
         /// Add an arbitrary <see cref="SpriteText"/> to this <see cref="TextFlowContainer"/>.
@@ -216,9 +217,9 @@ namespace osu.Framework.Graphics.Containers
         /// <param name="creationParameters">A callback providing any <see cref="SpriteText" /> instances created for this new text.</param>
         public void AddText(SpriteText text, Action<SpriteText> creationParameters = null)
         {
-            base.Add(text);
             defaultCreationParameters?.Invoke(text);
             creationParameters?.Invoke(text);
+            AddPart(new TextPartManual(text));
         }
 
         /// <summary>
@@ -227,17 +228,20 @@ namespace osu.Framework.Graphics.Containers
         /// <returns>A collection of <see cref="Drawable" /> objects for each <see cref="SpriteText"/> word and <see cref="NewLineContainer"/> created from the given text.</returns>
         /// <param name="paragraph">The paragraph to add.</param>
         /// <param name="creationParameters">A callback providing any <see cref="SpriteText" /> instances created for this new paragraph.</param>
-        public IEnumerable<Drawable> AddParagraph(string paragraph, Action<SpriteText> creationParameters = null) => AddLine(new TextChunk(paragraph, false, creationParameters));
+        public ITextPart AddParagraph(string paragraph, Action<SpriteText> creationParameters = null) => AddLine(CreateChunkFor(paragraph, false, creationParameters));
+
+        internal virtual TextChunk CreateChunkFor(string text, bool newLineIsParagraph, Action<SpriteText> creationParameters = null)
+            => new TextChunk(text, newLineIsParagraph, creationParameters);
 
         /// <summary>
         /// End current line and start a new one.
         /// </summary>
-        public void NewLine() => base.Add(new NewLineContainer(false));
+        public void NewLine() => AddPart(new TextNewLine(false));
 
         /// <summary>
         /// End current paragraph and start a new one.
         /// </summary>
-        public void NewParagraph() => base.Add(new NewLineContainer(true));
+        public void NewParagraph() => AddPart(new TextNewLine(true));
 
         protected virtual SpriteText CreateSpriteText() => new SpriteText();
 
@@ -254,79 +258,30 @@ namespace osu.Framework.Graphics.Containers
             throw new InvalidOperationException($"Use {nameof(AddText)} to add text to a {nameof(TextFlowContainer)}.");
         }
 
-        internal virtual IEnumerable<Drawable> AddLine(TextChunk chunk)
+        internal void Add(Drawable drawable, ITextPart source)
         {
-            var sprites = new List<Drawable>();
+            base.Add(drawable);
+            parts.Add((source, drawable));
+        }
 
+        internal ITextPart AddLine(TextChunk chunk)
+        {
             // !newLineIsParagraph effectively means that we want to add just *one* paragraph, which means we need to make sure that any previous paragraphs
             // are terminated. Thus, we add a NewLineContainer that indicates the end of the paragraph before adding our current paragraph.
             if (!chunk.NewLineIsParagraph)
             {
-                var newLine = new NewLineContainer(true);
-                sprites.Add(newLine);
-                base.Add(newLine);
+                var newLine = new TextNewLine(true);
+                AddPart(newLine);
             }
 
-            sprites.AddRange(AddString(chunk));
-
-            return sprites;
+            AddPart(chunk);
+            return chunk;
         }
 
-        internal IEnumerable<Drawable> AddString(TextChunk chunk)
+        internal ITextPart AddPart(ITextPart part)
         {
-            bool first = true;
-            var sprites = new List<Drawable>();
-
-            foreach (string l in chunk.Text.Split('\n'))
-            {
-                if (!first)
-                {
-                    Drawable lastChild = Children.LastOrDefault();
-
-                    if (lastChild != null)
-                    {
-                        var newLine = new NewLineContainer(chunk.NewLineIsParagraph);
-                        sprites.Add(newLine);
-                        base.Add(newLine);
-                    }
-                }
-
-                foreach (string word in SplitWords(l))
-                {
-                    if (string.IsNullOrEmpty(word)) continue;
-
-                    var textSprite = CreateSpriteTextWithChunk(chunk);
-                    textSprite.Text = word;
-                    sprites.Add(textSprite);
-                    base.Add(textSprite);
-                }
-
-                first = false;
-            }
-
-            return sprites;
-        }
-
-        protected string[] SplitWords(string text)
-        {
-            var words = new List<string>();
-            var builder = new StringBuilder();
-
-            for (var i = 0; i < text.Length; i++)
-            {
-                if (i == 0 || char.IsSeparator(text[i - 1]) || char.IsControl(text[i - 1]))
-                {
-                    words.Add(builder.ToString());
-                    builder.Clear();
-                }
-
-                builder.Append(text[i]);
-            }
-
-            if (builder.Length > 0)
-                words.Add(builder.ToString());
-
-            return words.ToArray();
+            part.AppendTo(this);
+            return part;
         }
 
         private readonly Cached layout = new Cached();
