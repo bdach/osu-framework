@@ -77,7 +77,7 @@ namespace osu.Framework.Android
         {
             base.OnPause();
             // Because Android is not playing nice with Background - we just kill it
-            Process.GetCurrentProcess().Kill();
+            Process.GetCurrentProcess().Kill()
         }
 
         public override void OnBackPressed()

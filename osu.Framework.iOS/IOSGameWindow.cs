@@ -42,7 +42,7 @@ namespace osu.Framework.iOS
         protected override DisplayDevice CurrentDisplayDevice
         {
             get => DisplayDevice.Default;
-            set => throw new InvalidOperationException();
+            set => throw new InvalidOperationException()
         }
 
         protected override IEnumerable<WindowMode> DefaultSupportedWindowModes => new[]
