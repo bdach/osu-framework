@@ -267,12 +267,12 @@ namespace osu.Framework.Testing
 
                 return kind != SyntaxKind.UsingDirective
                        && kind != SyntaxKind.NamespaceKeyword
-                       && (kind != SyntaxKind.ClassDeclaration || ((ClassDeclarationSyntax)n).Modifiers.All(m => m.Kind() != SyntaxKind.StaticKeyword))
+                       && (kind != SyntaxKind.ClassDeclaration || ((ClassDeclarationSyntax)n).Modifiers.All(m => !m.IsKind(SyntaxKind.StaticKeyword)))
                        && (kind != SyntaxKind.QualifiedName || !(n.Parent is NamespaceDeclarationSyntax))
                        && kind != SyntaxKind.NameColon
-                       && (kind != SyntaxKind.QualifiedName || n.Parent?.Kind() != SyntaxKind.NamespaceDeclaration)
+                       && (kind != SyntaxKind.QualifiedName || n.Parent?.IsKind(SyntaxKind.NamespaceDeclaration) != true)
                        && kind != SyntaxKind.ElementAccessExpression
-                       && (n.Parent?.Kind() != SyntaxKind.InvocationExpression || n != ((InvocationExpressionSyntax)n.Parent).Expression);
+                       && (n.Parent?.IsKind(SyntaxKind.InvocationExpression) != true || n != ((InvocationExpressionSyntax)n.Parent).Expression);
             });
 
             // This hashset is used to prevent re-exploring syntaxes with the same name.
@@ -281,7 +281,7 @@ namespace osu.Framework.Testing
 
             await Task.WhenAll(descendantNodes.Select(node => Task.Run(() =>
             {
-                if (node.Kind() == SyntaxKind.IdentifierName && node.Parent != null)
+                if (node.IsKind(SyntaxKind.IdentifierName) && node.Parent != null)
                 {
                     // Ignore the variable name of assignment expressions.
                     if (node.Parent is AssignmentExpressionSyntax)
