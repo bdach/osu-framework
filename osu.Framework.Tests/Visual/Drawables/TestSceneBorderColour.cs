@@ -68,5 +68,38 @@ namespace osu.Framework.Tests.Visual.Drawables
                     container.CornerExponent = exponent;
             });
         }
+
+        [Test]
+        public void TestBlending()
+        {
+            Box additiveLayer = null;
+
+            AddStep("create bordered box", () => Child = new Container
+            {
+                Anchor = Anchor.Centre,
+                Origin = Anchor.Centre,
+                Masking = true,
+                BorderThickness = 15,
+                BorderColour = Colour4.DarkGreen,
+                Size = new Vector2(200),
+                Children = new Drawable[]
+                {
+                    new Box
+                    {
+                        RelativeSizeAxes = Axes.Both,
+                        Colour = Colour4.Green
+                    },
+                    additiveLayer = new Box
+                    {
+                        RelativeSizeAxes = Axes.Both,
+                        Colour = Colour4.White,
+                        Blending = BlendingParameters.Additive,
+                        Alpha = 0
+                    }
+                }
+            });
+
+            AddStep("flash box", () => additiveLayer.FadeOutFromOne(500, Easing.OutQuint));
+        }
     }
 }
