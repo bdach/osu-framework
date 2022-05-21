@@ -201,7 +201,44 @@ namespace osu.Framework.Graphics.Containers
                 if (Children != null)
                 {
                     for (int i = 0; i < Children.Count; i++)
-                        Children[i].Draw(vertexAction);
+                    {
+                        var child = Children[i];
+
+                        bool pushedTempMaskingInfo = false;
+
+                        if (child.DrawColourInfo.Blending == BlendingParameters.Additive
+                            && maskingInfo != null)
+                        {
+                            GLWrapper.PopMaskingInfo();
+                            var tempMasking = new MaskingInfo
+                            {
+                                ScreenSpaceAABB = maskingInfo.Value.ScreenSpaceAABB,
+                                MaskingRect = maskingInfo.Value.MaskingRect,
+                                ConservativeScreenSpaceQuad = maskingInfo.Value.ConservativeScreenSpaceQuad,
+                                ToMaskingSpace = maskingInfo.Value.ToMaskingSpace,
+                                CornerRadius = maskingInfo.Value.CornerRadius,
+                                CornerExponent = maskingInfo.Value.CornerExponent,
+                                BorderThickness = maskingInfo.Value.BorderThickness,
+                                BorderColour = Colour4.Transparent,
+                                BlendRange = maskingInfo.Value.BlendRange,
+                                AlphaExponent = maskingInfo.Value.AlphaExponent,
+                                EdgeOffset = maskingInfo.Value.EdgeOffset,
+                                Hollow = maskingInfo.Value.Hollow,
+                                HollowCornerRadius = maskingInfo.Value.HollowCornerRadius
+                            };
+
+                            GLWrapper.PushMaskingInfo(tempMasking);
+                            pushedTempMaskingInfo = true;
+                        }
+
+                        child.Draw(vertexAction);
+
+                        if (pushedTempMaskingInfo)
+                        {
+                            GLWrapper.PopMaskingInfo();
+                            GLWrapper.PushMaskingInfo(maskingInfo.Value);
+                        }
+                    }
                 }
 
                 if (maskingInfo != null)
