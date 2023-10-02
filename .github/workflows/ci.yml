@@ -49,7 +49,7 @@ jobs:
         run: dotnet nvika parsereport "${{github.workspace}}/inspectcodereport.xml" --treatwarningsaserrors
 
   test:
-    name: Test
+    name: Run tests
     runs-on: ${{matrix.os.fullname}}
     env:
       OSU_EXECUTION_MODE: ${{matrix.threadingMode}}
@@ -90,12 +90,12 @@ jobs:
       - name: Test
         run: dotnet test $pwd/**/*.Tests/bin/${{matrix.os.configuration}}/*/*.Tests.dll --no-build --settings $pwd/build/vstestconfig.runsettings --logger "trx;LogFileName=TestResults-${{matrix.os.prettyname}}-${{matrix.threadingMode}}-${{matrix.os.configuration}}.trx"
         shell: pwsh
+        # Disregard errors when running the tests; they will be bubbled up later in the subsequent "test results" workflow run (see `report-nunit.yml`).
+        # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepscontinue-on-error
+        continue-on-error: true
 
-      # Attempt to upload results even if test fails.
-      # https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#always
       - name: Upload Test Results
         uses: actions/upload-artifact@v3
-        if: ${{ always() }}
         with:
           name: osu-framework-test-results-${{matrix.os.prettyname}}-${{matrix.threadingMode}}-${{matrix.os.configuration}}
           path: ${{github.workspace}}/TestResults/TestResults-${{matrix.os.prettyname}}-${{matrix.threadingMode}}-${{matrix.os.configuration}}.trx
