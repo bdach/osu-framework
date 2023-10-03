@@ -87,9 +87,14 @@ jobs:
       - name: Compile
         run: dotnet build -c ${{matrix.os.configuration}} -warnaserror osu-framework.Desktop.slnf
 
-      - name: Test
-        run: dotnet test osu.Framework.Tests -e LD_DEBUG="libs" --filter Name~"TestSceneVideo" -v diag
-        shell: pwsh
+      # - name: Test
+      #   run: dotnet test osu.Framework.Tests -e LD_DEBUG="libs" --filter Name~"TestSceneVideo" -v diag
+      #   shell: pwsh
+
+      - name: just hack the gibson i swear to christ i don't want to be spending a millisecond more on this
+        run: dotnet run --project VideoCrash
+        env:
+          LD_DEBUG: libs
 
       # Attempt to upload results even if test fails.
       # https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#always

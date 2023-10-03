@@ -2,6 +2,9 @@
   "solution": {
     "path": "osu-framework.sln",
     "projects": [
+      "SampleGame.Desktop\\SampleGame.Desktop.csproj",
+      "SampleGame\\SampleGame.csproj",
+      "VideoCrash\\VideoCrash.csproj",
       "osu.Framework.Benchmarks\\osu.Framework.Benchmarks.csproj",
       "osu.Framework.NativeLibs\\osu.Framework.NativeLibs.csproj",
       "osu.Framework.SourceGeneration.Tests\\osu.Framework.SourceGeneration.Tests.csproj",
@@ -15,9 +18,7 @@
       "osu.Framework.Templates\\templates\\template-flappy\\FlappyDon.Game\\FlappyDon.Game.csproj",
       "osu.Framework.Templates\\templates\\template-flappy\\FlappyDon.Resources\\FlappyDon.Resources.csproj",
       "osu.Framework.Tests\\osu.Framework.Tests.csproj",
-      "osu.Framework\\osu.Framework.csproj",
-      "SampleGame.Desktop\\SampleGame.Desktop.csproj",
-      "SampleGame\\SampleGame.csproj"
+      "osu.Framework\\osu.Framework.csproj"
     ]
   }
 }
