@@ -95,6 +95,7 @@ jobs:
         run: dotnet run --project VideoCrash
         env:
           LD_DEBUG: libs
+          LD_LIBRARY_PATH: "./VideoCrash/bin/Debug/net6.0/runtimes/linux-x64"
 
       # Attempt to upload results even if test fails.
       # https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#always
