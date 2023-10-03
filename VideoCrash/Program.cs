@@ -15,7 +15,7 @@ namespace VideoCrash
         [STAThread]
         public static void Main(string[] args)
         {
-            using (GameHost host = Host.GetSuitableDesktopHost(@"sample-game"))
+            using (GameHost host = new HeadlessGameHost(@"sample-game"))
             using (Game game = new SampleGameGame())
                 host.Run(game);
         }
