@@ -54,6 +54,7 @@ jobs:
     env:
       OSU_EXECUTION_MODE: ${{matrix.threadingMode}}
       OSU_TESTS_LOCAL_HTTPBIN: 1
+      LD_DEBUG: libs
     strategy:
        fail-fast: false
        matrix:
