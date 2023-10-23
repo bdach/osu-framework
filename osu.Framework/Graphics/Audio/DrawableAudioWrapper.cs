@@ -9,6 +9,7 @@ using osu.Framework.Allocation;
 using osu.Framework.Audio;
 using osu.Framework.Audio.Mixing;
 using osu.Framework.Bindables;
+using osu.Framework.Extensions.EnumExtensions;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Layout;
 
@@ -53,20 +54,12 @@ namespace osu.Framework.Graphics.Audio
         private IAggregateAudioAdjustment parentAdjustment;
         private IAudioMixer parentMixer;
 
-        private readonly LayoutValue fromParentLayout = new LayoutValue(Invalidation.Parent);
-
-        private DrawableAudioWrapper()
-        {
-            AddLayout(fromParentLayout);
-        }
-
         /// <summary>
         /// Creates a <see cref="DrawableAudioWrapper"/> that will contain a drawable child.
         /// Generally used to add adjustments to a hierarchy without adding an audio component.
         /// </summary>
         /// <param name="content">The <see cref="Drawable"/> to be wrapped.</param>
         protected DrawableAudioWrapper(Drawable content)
-            : this()
         {
             AddInternal(content);
         }
@@ -77,7 +70,6 @@ namespace osu.Framework.Graphics.Audio
         /// <param name="component">The audio component to wrap.</param>
         /// <param name="disposeUnderlyingComponentOnDispose">Whether the component should be automatically disposed on drawable disposal/expiry.</param>
         protected DrawableAudioWrapper([NotNull] IAdjustableAudioComponent component, bool disposeUnderlyingComponentOnDispose = true)
-            : this()
         {
             this.component = component ?? throw new ArgumentNullException(nameof(component));
             this.disposeUnderlyingComponentOnDispose = disposeUnderlyingComponentOnDispose;
@@ -85,15 +77,24 @@ namespace osu.Framework.Graphics.Audio
             component.BindAdjustments(adjustments);
         }
 
-        protected override void Update()
+        protected override bool OnInvalidate(Invalidation invalidation, InvalidationSource source)
         {
-            base.Update();
+            bool invalidated = base.OnInvalidate(invalidation, source);
 
-            if (!fromParentLayout.IsValid)
+            if (invalidation.HasFlagFast(Invalidation.Parent))
             {
+                // this is not generally correct usage of invalidation.
+                // during `OnInvalidate`, things may generally be in an undefined state.
+                // however, `Parent` invalidations currently actually can be acted on immediately due to implementation details.
+                // the reason why this does not use the correct `LayoutValue` + `Update()` re-validation flow
+                // is that it would break game-side usages (i.e. pooling),
+                // as in such scenarios it is not guaranteed that the wrapper's `Update()` will correctly apply adjustments
+                // before playback of the wrapped audio component is requested.
                 refreshLayoutFromParent();
-                fromParentLayout.Validate();
+                invalidated = true;
             }
+
+            return invalidated;
         }
 
         private void refreshLayoutFromParent()
