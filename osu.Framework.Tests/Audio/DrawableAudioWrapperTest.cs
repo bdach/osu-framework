@@ -7,6 +7,7 @@ using osu.Framework.Audio;
 using osu.Framework.Audio.Track;
 using osu.Framework.Bindables;
 using osu.Framework.Graphics.Audio;
+using osu.Framework.Graphics.Containers;
 using osu.Framework.Testing;
 using osu.Framework.Tests.Visual;
 
@@ -40,6 +41,52 @@ namespace osu.Framework.Tests.Audio
             AddStep("mute wrapper", () => wrapper.AddAdjustment(AdjustableProperty.Volume, new BindableDouble()));
             AddStep("expire wrapper", () => wrapper.Expire());
             AddAssert("component unmuted", () => track.AggregateVolume.Value, () => Is.EqualTo(1));
+            AddStep("allow disposal to complete", () => wrapper.AllowDisposal.Set());
+        }
+
+        /// <summary>
+        /// When changing a <see cref="DrawableAudioWrapper"/>'s parent, its adjustments are expected to transfer immediately.
+        /// This is because in some scnenarios (i.e. sample pooling), it can be the case that the component requesting sample playback
+        /// does so before the <see cref="DrawableAudioWrapper"/> has a chance to update itself.
+        /// </summary>
+        [Test]
+        public void TestAdjustmentsAppliedImmediatelyOnParentChange()
+        {
+            AudioContainer first = new AudioContainer();
+            AudioContainer second = new AudioContainer();
+            SlowDisposingDrawableAudioWrapper wrapper = new SlowDisposingDrawableAudioWrapper(new TrackVirtual(1000));
+
+            AddStep("load containers", () =>
+            {
+                LoadComponent(first);
+                LoadComponent(second);
+            });
+
+            AddStep("set volume on first audio container", () => first.Volume.Value = 0.8);
+            AddStep("set volume on second audio container", () => second.Volume.Value = 0.5);
+
+            AddStep("add wrapper to first container", () => first.Add(wrapper));
+            AddAssert("wrapper has correct aggregate volume", () => wrapper.AggregateVolume.Value, () => Is.EqualTo(0.8));
+            AddStep("update containers", () =>
+            {
+                first.UpdateSubTree();
+                second.UpdateSubTree();
+            });
+            AddAssert("wrapper has correct aggregate volume", () => wrapper.AggregateVolume.Value, () => Is.EqualTo(0.8));
+
+            AddStep("transfer wrapper to second container", () =>
+            {
+                first.Remove(wrapper, false);
+                second.Add(wrapper);
+            });
+            AddAssert("wrapper has correct aggregate volume", () => wrapper.AggregateVolume.Value, () => Is.EqualTo(0.5));
+            AddStep("update containers", () =>
+            {
+                first.UpdateSubTree();
+                second.UpdateSubTree();
+            });
+            AddAssert("wrapper has correct aggregate volume", () => wrapper.AggregateVolume.Value, () => Is.EqualTo(0.5));
+
             AddStep("allow disposal to complete", () => wrapper.AllowDisposal.Set());
         }
 
